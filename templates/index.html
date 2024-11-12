@@ -2,43 +2,15 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Email Verification</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <title>AI Assistant Chatbot</title>
+    <script src="https://cdn.jsdelivr.net/npm/@gradio/client@0.0.6/dist/index.js"></script>
 </head>
 <body>
-    <div class="email-form">
-        <form id="emailForm">
-            <label for="email">Enter your email to access the chatbot:</label><br>
-            <input type="email" id="email" name="email" required placeholder="you@example.com"><br>
-            <button type="submit" id="submitButton">Submit</button>
-        </form>
-    </div>
-
+    <h1>Welcome to the AI Assistant Chatbot</h1>
+    <div id="gradio-interface"></div>
     <script>
-        document.getElementById('emailForm').addEventListener('submit', function(event) {
-            event.preventDefault();
-            const email = document.getElementById('email').value;
-            if (email) {
-                fetch('/validate_email', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ email: email }),
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.valid) {
-                        window.location.href = '/chatbot';
-                    } else {
-                        alert('Invalid email address.');
-                    }
-                })
-                .catch((error) => {
-                    console.error('Error:', error);
-                });
-            }
-        });
+        const app = new gradio.App('http://127.0.0.1:5000/chatbot');
+        app.render('#gradio-interface');
     </script>
 </body>
 </html>
