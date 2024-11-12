@@ -4,7 +4,7 @@ import openai
 app = Flask(__name__)
 
 # Replace with your Perplexity API key
-YOUR_API_KEY = 'your_perplexity_api_key'
+YOUR_API_KEY = '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'
 
 # Initialize the OpenAI client with Perplexity's API key and base URL
 openai.api_key = YOUR_API_KEY
