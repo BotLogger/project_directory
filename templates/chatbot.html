@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Chatbot Interface</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="chat-container">
+        <div id="chatbox" class="chatbox"></div>
+        <form id="chatForm">
+            <input type="text" id="userInput" placeholder="Enter your message..." required>
+            <button type="submit">Send</button>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('chatForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const userInput = document.getElementById('userInput').value;
+            if (userInput) {
+                const chatbox = document.getElementById('chatbox');
+                const userMessage = document.createElement('div');
+                userMessage.className = 'user-message';
+                userMessage.textContent = userInput;
+                chatbox.appendChild(userMessage);
+
+                fetch('/get_response', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ user_input: userInput }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const assistantMessage = document.createElement('div');
+                    assistantMessage.className = 'assistant-message';
+                    assistantMessage.textContent = data.assistant_message;
+                    chatbox.appendChild(assistantMessage);
+                    chatbox.scrollTop = chatbox.scrollHeight;
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                });
+
+                document.getElementById('userInput').value = '';
+            }
+        });
+    </script>
+</body>
+</html>
