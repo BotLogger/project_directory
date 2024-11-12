@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify, render_template
 import openai
+import gradio as gr
 
 app = Flask(__name__)
 
@@ -21,26 +22,7 @@ messages = [
     },
 ]
 
-@app.route('/')
-def index():
-    return render_template('index.html')
-
-@app.route('/validate_email', methods=['POST'])
-def validate_email():
-    data = request.get_json()
-    email = data.get('email')
-    if email and '@' in email:
-        # Log the email or perform additional validation if necessary
-        return jsonify({'valid': True})
-    return jsonify({'valid': False})
-
-@app.route('/chatbot')
-def chatbot():
-    return render_template('chatbot.html')
-
-@app.route('/get_response', methods=['POST'])
-def get_response():
-    user_input = request.json.get('user_input')
+def respond(user_input, chat_history):
     messages.append({"role": "user", "content": user_input})
     response = openai.ChatCompletion.create(
         model="llama-3.1-sonar-large-128k-online",
@@ -48,7 +30,30 @@ def get_response():
     )
     assistant_message = response.choices[0].message['content']
     messages.append({"role": "assistant", "content": assistant_message})
-    return jsonify({'assistant_message': assistant_message})
+    chat_history.append((user_input, assistant_message))
+    return "", chat_history
+
+# Define the Gradio interface
+with gr.Blocks() as demo:
+    gr.Markdown("# AI Assistant Chatbot")
+    chatbot = gr.Chatbot()
+    with gr.Row():
+        with gr.Column(scale=0.85):
+            txt = gr.Textbox(
+                show_label=False,
+                placeholder="Enter your message...",
+            ).style(container=False)
+        with gr.Column(scale=0.15, min_width=0):
+            btn = gr.Button("Send")
+    btn.click(respond, [txt, chatbot], [txt, chatbot])
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/chatbot')
+def chatbot_page():
+    return demo.launch(share=False, inline=True)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
